@@ -1,0 +1,20 @@
+# Entornos virtuales
+.venv/
+__pycache__/
+*.pyc
+
+# Configuración y Credenciales
+.env
+data/secret.key
+
+# Modelos y Datos Grandes (ONNX)
+models/
+
+# Frontend builds & dependencias
+frontend/node_modules/
+frontend/dist/
+
+# Archivos de reportes locales
+*.xlsx
+*.csv
+*.log
