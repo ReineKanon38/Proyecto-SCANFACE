@@ -133,20 +133,18 @@ async def register(
     student_id: str = Form(...),
     name: str = Form(...),
     photo_frontal: UploadFile = File(...),
-    photo_left: UploadFile = File(...),
-    photo_right: UploadFile = File(...)
+    photo_accessories: UploadFile = File(...)
 ):
     """
-    Registers a new student by processing three pre-loaded photos.
+    Registers a new student by processing two frontal photos.
     Extracts embeddings for each and saves to Supabase.
     """
     embeddings = {}
     
-    # Process the three images
+    # Process the two images
     photos = {
         "embedding_frontal": photo_frontal,
-        "embedding_left": photo_left,
-        "embedding_right": photo_right
+        "embedding_accessories": photo_accessories
     }
     
     for key, file in photos.items():
@@ -184,8 +182,7 @@ async def register(
             student_id=student_id,
             encrypted_name=encrypted_name,
             embedding_frontal=embeddings["embedding_frontal"],
-            embedding_left=embeddings["embedding_left"],
-            embedding_right=embeddings["embedding_right"]
+            embedding_accessories=embeddings["embedding_accessories"]
         )
         # Refresh local cache
         refresh_students_cache()

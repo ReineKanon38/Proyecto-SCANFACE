@@ -28,14 +28,13 @@ def get_all_students():
         print(f"Error fetching students: {e}")
         return []
 
-def register_student(student_id: str, encrypted_name: str, embedding_frontal: list[float], embedding_left: list[float], embedding_right: list[float]):
+def register_student(student_id: str, encrypted_name: str, embedding_frontal: list[float], embedding_accessories: list[float]):
     """Registers a new student in Supabase."""
     data = {
         "id": student_id,
         "name": encrypted_name,
         "embedding_frontal": embedding_frontal,
-        "embedding_left": embedding_left,
-        "embedding_right": embedding_right
+        "embedding_accessories": embedding_accessories
     }
     try:
         response = supabase.table("students").insert(data).execute()

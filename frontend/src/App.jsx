@@ -24,21 +24,18 @@ function App() {
   const [fullName, setFullName] = useState('');
   const [photos, setPhotos] = useState({
     frontal: null,
-    left: null,
-    right: null
+    accessories: null
   });
   const [photoPreviews, setPhotoPreviews] = useState({
     frontal: null,
-    left: null,
-    right: null
+    accessories: null
   });
   
   const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState({ text: '', type: '' }); // type: 'success' | 'error'
   
   const fileFrontalRef = useRef(null);
-  const fileLeftRef = useRef(null);
-  const fileRightRef = useRef(null);
+  const fileAccessoriesRef = useRef(null);
   
   // Camera & WebSocket Refs
   const videoRef = useRef(null);
@@ -256,8 +253,8 @@ function App() {
   // Handle Student Registration
   const handleRegister = async (e) => {
     e.preventDefault();
-    if (!studentId || !fullName || !photos.frontal || !photos.left || !photos.right) {
-      setToast({ text: 'Por favor complete todos los campos y suba las 3 fotografías.', type: 'error' });
+    if (!studentId || !fullName || !photos.frontal || !photos.accessories) {
+      setToast({ text: 'Por favor complete todos los campos y suba las 2 fotografías.', type: 'error' });
       return;
     }
 
@@ -267,8 +264,7 @@ function App() {
       formData.append('student_id', studentId);
       formData.append('name', fullName);
       formData.append('photo_frontal', photos.frontal);
-      formData.append('photo_left', photos.left);
-      formData.append('photo_right', photos.right);
+      formData.append('photo_accessories', photos.accessories);
 
       const res = await fetch(`${API_BASE}/api/register`, {
         method: 'POST',
@@ -281,8 +277,8 @@ function App() {
         // Clear inputs
         setStudentId('');
         setFullName('');
-        setPhotos({ frontal: null, left: null, right: null });
-        setPhotoPreviews({ frontal: null, left: null, right: null });
+        setPhotos({ frontal: null, accessories: null });
+        setPhotoPreviews({ frontal: null, accessories: null });
         loadStudents();
       } else {
         setToast({ text: data.detail || 'Error al registrar al alumno', type: 'error' });
@@ -766,10 +762,10 @@ function App() {
                         {/* File Upload Grids with previews */}
                         <div>
                           <label className="block text-xs font-bold text-gray-300 uppercase tracking-widest mb-3">Fotografías de Enrolamiento (Obligatorias)</label>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {/* Frontal Photo */}
                             <div className="flex flex-col items-center">
-                              <span className="text-[11px] text-gray-400 font-semibold mb-1">Foto Frontal</span>
+                              <span className="text-[11px] text-gray-400 font-semibold mb-1">Foto Frontal (Sin Accesorios)</span>
                               <div 
                                 onClick={() => fileFrontalRef.current.click()}
                                 className="w-full h-32 rounded-xl border border-dashed border-white/10 hover:border-indigo-500/50 bg-white/2 hover:bg-white/5 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center overflow-hidden relative"
@@ -794,15 +790,15 @@ function App() {
                               />
                             </div>
 
-                            {/* Left Profile Photo */}
+                            {/* Accessories Photo */}
                             <div className="flex flex-col items-center">
-                              <span className="text-[11px] text-gray-400 font-semibold mb-1">Perfil Izquierdo</span>
+                              <span className="text-[11px] text-gray-400 font-semibold mb-1">Foto Frontal (Con Accesorios - Lentes/Gorra)</span>
                               <div 
-                                onClick={() => fileLeftRef.current.click()}
+                                onClick={() => fileAccessoriesRef.current.click()}
                                 className="w-full h-32 rounded-xl border border-dashed border-white/10 hover:border-indigo-500/50 bg-white/2 hover:bg-white/5 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center overflow-hidden relative"
                               >
-                                {photoPreviews.left ? (
-                                  <img src={photoPreviews.left} alt="Left profile preview" className="w-full h-full object-cover" />
+                                {photoPreviews.accessories ? (
+                                  <img src={photoPreviews.accessories} alt="Accessories preview" className="w-full h-full object-cover" />
                                 ) : (
                                   <div className="text-center p-3 text-gray-400 flex flex-col items-center gap-1.5">
                                     <svg className="w-7 h-7 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -815,35 +811,8 @@ function App() {
                               <input 
                                 type="file" 
                                 accept="image/*"
-                                ref={fileLeftRef}
-                                onChange={(e) => handlePhotoChange('left', e.target.files[0])}
-                                className="hidden"
-                              />
-                            </div>
-
-                            {/* Right Profile Photo */}
-                            <div className="flex flex-col items-center">
-                              <span className="text-[11px] text-gray-400 font-semibold mb-1">Perfil Derecho</span>
-                              <div 
-                                onClick={() => fileRightRef.current.click()}
-                                className="w-full h-32 rounded-xl border border-dashed border-white/10 hover:border-indigo-500/50 bg-white/2 hover:bg-white/5 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center overflow-hidden relative"
-                              >
-                                {photoPreviews.right ? (
-                                  <img src={photoPreviews.right} alt="Right profile preview" className="w-full h-full object-cover" />
-                                ) : (
-                                  <div className="text-center p-3 text-gray-400 flex flex-col items-center gap-1.5">
-                                    <svg className="w-7 h-7 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                    <span className="text-[10px] font-medium">Subir Imagen</span>
-                                  </div>
-                                )}
-                              </div>
-                              <input 
-                                type="file" 
-                                accept="image/*"
-                                ref={fileRightRef}
-                                onChange={(e) => handlePhotoChange('right', e.target.files[0])}
+                                ref={fileAccessoriesRef}
+                                onChange={(e) => handlePhotoChange('accessories', e.target.files[0])}
                                 className="hidden"
                               />
                             </div>

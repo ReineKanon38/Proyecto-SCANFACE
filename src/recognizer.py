@@ -183,7 +183,7 @@ class FaceEngine:
             
             # Embeddings are stored in Supabase as JSON arrays of 128 floats
             # We parse them
-            for col in ["embedding_frontal", "embedding_left", "embedding_right"]:
+            for col in ["embedding_frontal", "embedding_accessories"]:
                 if student.get(col):
                     saved_emb = np.array(student[col], dtype=np.float32)
                     score = self.compare_embeddings(query_embedding, saved_emb)

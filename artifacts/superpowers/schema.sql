@@ -7,8 +7,7 @@ CREATE TABLE IF NOT EXISTS students (
     name TEXT NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     embedding_frontal vector(128),
-    embedding_left vector(128),
-    embedding_right vector(128)
+    embedding_accessories vector(128)
 );
 
 -- Crear la tabla de logs de asistencia

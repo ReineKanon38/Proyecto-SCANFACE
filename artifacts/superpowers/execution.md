@@ -49,3 +49,48 @@
   - Asegurado el apagado de la cámara web (liberación física de recursos y apagado del LED) tanto en Modo Local (vaciando el origen del feed) como en Modo Nube (deteniendo las pistas de `localStream` y desconectando el WebSocket) cuando el administrador sale de la pestaña de escaneo.
 - **Verification command(s)**: `npm run build` en `frontend/`
 - **Result**: PASS (compilación de producción exitosa sin errores en 257ms).
+
+# Fase 3: Transición a 2 Fotos Frontales (Normal y Accesorios)
+
+## Step 1: Actualizar el Script del Schema de Base de Datos
+- **Files changed**:
+  - `artifacts/superpowers/schema.sql` (MODIFY)
+- **What changed**:
+  - Reemplazadas las columnas `embedding_left` y `embedding_right` por la columna única `embedding_accessories` en la definición de la tabla `students`.
+- **Verification command(s)**: Ejecución del script DDL en el editor SQL de Supabase.
+- **Result**: PASS (la estructura fue actualizada exitosamente por el usuario en el panel de Supabase).
+
+## Step 2: Modificar los Métodos de la Base de Datos (CRUD)
+- **Files changed**:
+  - `src/db.py` (MODIFY)
+- **What changed**:
+  - Actualizada la función `register_student` para recibir `embedding_accessories` en lugar de las variables de perfil (`left` y `right`).
+  - Actualizados los campos del diccionario `data` insertado en Supabase para reflejar el cambio en las columnas.
+- **Verification command(s)**: `.\.venv\Scripts\python.exe -c "import src.db"`
+- **Result**: PASS (importación y sintaxis correctas sin errores de ejecución).
+
+## Step 3: Modificar la Lógica de Comparación de Rostros
+- **Files changed**:
+  - `src/recognizer.py` (MODIFY)
+- **What changed**:
+  - Actualizada la función `match_face` para comparar el rostro detectado en vivo contra `embedding_frontal` y la nueva columna `embedding_accessories`.
+- **Verification command(s)**: `.\.venv\Scripts\python.exe -m src.recognizer`
+- **Result**: PASS (inicialización y compilación del motor facial exitosa sin errores).
+
+## Step 4: Actualizar los Endpoints en la API de FastAPI
+- **Files changed**:
+  - `src/main.py` (MODIFY)
+- **What changed**:
+  - Modificado el endpoint `/api/register` para recibir únicamente `photo_frontal` y `photo_accessories` como archivos.
+  - Actualizado el ciclo de procesamiento y extracción de embeddings para calcular y registrar estos dos vectores en Supabase.
+- **Verification command(s)**: `.\.venv\Scripts\python.exe -c "import src.main"`
+- **Result**: PASS (FastAPI inicia y refresca la caché de alumnos de Supabase exitosamente sin errores).
+
+## Step 5: Modificar la Interfaz Gráfica del Frontend (React)
+- **Files changed**:
+  - `frontend/src/App.jsx` (MODIFY)
+- **What changed**:
+  - Removidos los campos de carga de fotos laterales y reemplazados por dos cargadores exclusivos: "Foto Frontal (Sin Accesorios)" y "Foto Frontal (Con Accesorios)".
+  - Actualizado el estado de las fotos y vistas previas, y modificada la función de envío de formulario para adjuntar los dos archivos de imagen en FormData.
+- **Verification command(s)**: `npm run build` en `frontend/`
+- **Result**: PASS (compilación de producción exitosa sin errores en 255ms).
