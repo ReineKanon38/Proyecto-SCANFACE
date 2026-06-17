@@ -170,6 +170,19 @@ class FaceEngine:
         similarity = dot_product / (norm_e1 * norm_e2)
         return float(similarity)
 
+    def parse_embedding(self, val):
+        """Safely parses a vector value which might be a JSON array string or a list."""
+        if val is None:
+            return None
+        if isinstance(val, str):
+            try:
+                # Strip brackets and split by comma
+                val = [float(x) for x in val.strip("[]").split(",") if x.strip()]
+            except Exception as e:
+                print(f"[RECOGNIZER] Error parsing embedding string: {e}")
+                return None
+        return np.array(val, dtype=np.float32)
+
     def match_face(self, query_embedding, cached_students, threshold=0.363):
         """
         Compares query embedding with cached students.
@@ -181,11 +194,13 @@ class FaceEngine:
         for student in cached_students:
             student_id = student["id"]
             
-            # Embeddings are stored in Supabase as JSON arrays of 128 floats
-            # We parse them
+            # Embeddings are stored in Supabase as JSON arrays of 128 floats or strings
+            # We parse them safely
             for col in ["embedding_frontal", "embedding_accessories"]:
                 if student.get(col):
-                    saved_emb = np.array(student[col], dtype=np.float32)
+                    saved_emb = self.parse_embedding(student[col])
+                    if saved_emb is None:
+                        continue
                     score = self.compare_embeddings(query_embedding, saved_emb)
                     if score > best_score:
                         best_score = score
@@ -208,7 +223,9 @@ class FaceEngine:
         if not student or not student.get("embedding_frontal"):
             return
             
-        old_frontal = np.array(student["embedding_frontal"], dtype=np.float32)
+        old_frontal = self.parse_embedding(student["embedding_frontal"])
+        if old_frontal is None:
+            return
         
         # Adaptive formula: 90% old, 10% new
         updated_raw = (old_frontal * 0.9) + (current_embedding * 0.1)

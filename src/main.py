@@ -57,7 +57,14 @@ refresh_students_cache()
 # Thread-safe Camera Stream class
 class CameraStream:
     def __init__(self, src=0):
-        self.stream = cv2.VideoCapture(src)
+        # On Windows, using DirectShow (cv2.CAP_DSHOW) dramatically reduces camera initialization delay
+        if os.name == 'nt' and isinstance(src, int):
+            self.stream = cv2.VideoCapture(src, cv2.CAP_DSHOW)
+            if not self.stream.isOpened():
+                self.stream = cv2.VideoCapture(src)
+        else:
+            self.stream = cv2.VideoCapture(src)
+            
         self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
         self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
         self.grabbed, self.frame = self.stream.read()
@@ -297,6 +304,15 @@ def generate_video_stream():
             if active_connections <= 0:
                 print("[CAMERA] No active stream connections. Releasing camera.")
                 release_camera()
+
+@app.post("/api/camera/off")
+def camera_off():
+    """Forced camera shutdown from frontend controls."""
+    global active_connections
+    with camera_lock:
+        active_connections = 0
+        release_camera()
+    return {"success": True, "message": "Camera turned off"}
 
 @app.get("/api/video_feed")
 def video_feed():
